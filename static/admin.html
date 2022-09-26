@@ -2,10 +2,71 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <title></title>
+    <title>ACP</title>
   </head>
   <body>
-    <h1>Congratulations! You seem to be an admin</h1>
+    <h1>Admin Control Panel</h1>
 
+    <div>
+      <p>Progress: </p>
+      <span id="progress">Loading...</span>
+    </div>
+
+    <div>
+      <input type="number"></input>
+
+      <button type="button" onclick="update(this)">Update</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+    const currData = {
+
+    }
+
+    var socket = io();
+    socket.on("progress", (data) => {
+      currData.progress = data.progress;
+      currData.curr = data.dist;
+      updateProgress(data.progress);
+    });
+    socket.on("data", (data) => {
+      for (key in data) {
+        currData[key] = data[key];
+      }
+      updateProgress(currData.progress);
+    });
+    socket.emit("init");
+
+    function updateProgress(percentage=currData.progress) {
+      document.querySelector("#progress").innerHTML = percentage + "% (" + currData.curr + ") out of " + currData.goal + currData.units;
+    }
+
+  function formatNumber(n) {
+    if (("" + n).length <= 3) return n;
+    let chars = (("" + n).includes(".")) ? ("" + n).substr(0, ("" + n).indexOf(".")).split("") : ("" + n).split("");
+    let formatted = chars.reverse().reduce((prev, curr, i) => {
+      if (typeof prev != "string") return curr;
+      return (i % 3 == 0) ? prev + "," + curr : prev + curr;
+    });
+    return formatted.split("").reverse().join("") + ("" + n).substr(("" + n).indexOf("."));
+  }
+
+    function update(btn) {
+      const input = btn.parentElement.querySelector("input");
+      console.log(input.value);
+
+      fetch("./admin/update", {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        method: "post",
+        body: JSON.stringify({ progress: input.value })
+      }).then(res => res.text()).then(txt => {
+        if (txt != "true") alert("Error updating the data.");
+      });
+    }
+    </script>
   </body>
 </html>

@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const http = require('http');
 const server = http.createServer(app);
+const fs = require("fs");
 
 const path = require("path");
 
@@ -20,14 +21,14 @@ secured.use((req, res, next) => {
   res.set('WWW-Authenticate', 'Basic realm="401"')
   res.status(401).send('Authentication required.')
 });
+secured.use(express.json());
 
 // base app routing
 secured.get("/", (_req, res) => {
   res.sendFile(path.join(__dirname + "/static/admin.html"));
 });
 secured.post("/update", (req, res) => {
-  console.log(req.body, req);
-  res.send("test");
+  res.send(updateProgress(req.body.progress));
 });
 
 app.use("/admin", secured);
@@ -35,6 +36,9 @@ app.use("/admin", secured);
 app.get("/", (_req, res) => {
   res.sendFile(path.join(__dirname + "/static/index.html"));
 });
+app.get("/data", (_req, res) => {
+  res.send(JSON.stringify(data));
+})
 
 app.get("/assets/:file", (req, res) => { // assets
   const file = req.params.file;
@@ -45,8 +49,8 @@ server.listen(3000, () => {
   console.log("Listening on port 3000");
 });
 
-const progress = require(path.join(__dirname + "/data/goals.json"));
-console.log(progress);
+const data = require(path.join(__dirname + "/data/goals.json"));
+console.log(data);
 
 // socket.io stuff
 const { Server } = require("socket.io");
@@ -62,4 +66,30 @@ io.on('connection', (socket) => {
   socket.on("disconnect", () => {
     io.emit("usercount", --connected);
   });
+
+  socket.on("init", () => {
+    socket.emit("data", data);
+  });
+
+  socket.on("data", () => {
+    socket.emit("progress", data.progress);
+  });
 });
+
+function updateProgress(distance=null) {
+  distance = parseInt(distance);
+  if (Number.isNaN(distance)) return false;
+  data.curr = distance;
+  const progress = distance / (data.goal / 100);
+  console.log(progress, distance, data);
+
+  io.emit("progress", { progress: progress, dist: distance });
+
+  data.progress = progress;
+
+  fs.writeFile(path.join(__dirname + "/data/goals.json"), JSON.stringify(data), "utf8", () => {
+    console.log("saved");
+  });
+
+  return true;
+}
