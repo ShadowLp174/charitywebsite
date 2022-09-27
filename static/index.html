@@ -119,6 +119,10 @@
     /*Progress Bars*/
     .progress-bar-container {
       width: 100%;
+      position: relative;
+
+      display: flex;
+      flex-direction: column;
     }
     .progress-bar {
       width: 100%;
@@ -128,16 +132,18 @@
       padding: 0;
       margin: 0;
 
+      top: 2em;
+
       display: flex;
       flex-direction: row;
-      flex-grow: 1;
+      flex-grow: 0;
       flex-shrink: 1;
 
       position: relative;
     }
     .progress-bar-content-circle {
       width: 3vh;
-      height: 100%;
+      height: 3vh;
 
       top: -1px;
 
@@ -183,6 +189,27 @@
       position: absolute;
     }
 
+    .progress-bar-text {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 200%;
+      width: 100%;
+    }
+    .init {
+      opacity: 0;
+    }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        top: 10px;
+      }
+      to {
+        opacity: 1;
+        top: 0;
+      }
+    }
+
     /*Description Paragraph*/
     .description {
       /*background-color: #005f89;*/
@@ -215,18 +242,21 @@
       border: 1px solid rgba( 255, 255, 255, 0.18 );
 
       color: white;
+      font-size: 115%;
 
       width: 80%;
       height: 60%;
+
       padding: 20px;
       box-sizing: border-box;
 
       position: relative;
 
       display: flex;
-      justify-content: center;
+      /*justify-content: center;*/
       align-items: center;
       flex-wrap: wrap;
+      flex-direction: column;
     }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -243,10 +273,15 @@
             <h1 class="title">King's Rochester Charity Swimming</h1>
 
             <div class="progress-bar-container">
+              <div class="progress-bar-text">
+                <span style="font-size: 90%" class="init">Current: <span id="curr"></span></span>
+                <span style="float: right; font-size: 90%" class="init">Goal: <span id="goal"></span></span>
+                <span style="position: absolute; top: 0; left: 50%; transform: translate(-50%, 0); font-size: 120%" class="init" id="percentage"></span>
+              </div>
               <div class="progress-bar">
                 <div class="progress-bar-content-circle" style="left: -1px; margin-right: -1px"></div>
                 <div class="progress-bar-content-line"></div>
-                <div class="progress-bar-content-circle circle-right" style="right: -1px; margin-left: -1px"></div>
+                <div class="progress-bar-content-circle circle-right" style="right: -1px; /*margin-left: auto*/; margin-left: -1px"></div>
 
                 <div class="progress-bar-content-progress"></div>
               </div>
@@ -256,7 +291,8 @@
       </div>
       <div class="description">
         <div class="description-container" id="dsc">
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+          As a school, we have set out with the aim of swimming the length of the English Channel. However, instead of physically swimming from one side to the other, we are teaming together in an attempt to swim 1300 lengths. This is equal in distance to swimming across the Channel. The goal of this event is to raise money for Cobbes Meadow Riding School for the Disabled, the school charity for the year. Cobbes Meadow Riding School for the Disabled is a wonderful charity that provides horse riding and carriage driving opportunities to children and adults with an array of disabilities. This can be a crucial way for people to build on their social skills and develop their motor skills in a new way, as well as providing the opportunity to try exciting new things and make new friends.
+          <img src="./assets/poster.jpeg" height="100%" />
         </div>
       </div>
     </div>
@@ -277,6 +313,9 @@
         const scrollBottom = window.innerHeight - document.scrollingElement.scrollTop;
         document.getElementById("dsc").style.top = scrollBottom + "px";
       }
+
+      // get the curr data
+      socket.emit("init");
     });
     </script>
     <script>
@@ -285,16 +324,47 @@
       }
 
       var socket = io();
-      socket.on("progress", (data) => {
-        console.log("data", data);
-        currData.progress = data.progress;
+      var init = true;
+      socket.on("data", (data) => {
+        for (key in data) {
+          currData[key] = data[key];
+        }
         updateProgress(data.progress);
+
+        // update text
+        document.querySelector("#curr").innerHTML = currData.curr;
+        document.querySelector("#goal").innerHTML = currData.goal;
+        document.querySelector("#percentage").innerHTML = Math.round(currData.progress) + "%"
+
+        // animate on init
+        if (!init) return;
+        init = false;
+        const txt = document.querySelectorAll(".progress-bar-text > *");
+        for (let i = 0; i < txt.length; i++) {
+          txt[i].style.animationName = "fadeIn";
+          txt[i].style.animationDuration = "0.2s";
+          txt[i].style.animationIterationCount = 1;
+          txt[i].classList.remove("init")
+        }
       });
-      socket.emit("data");
 
       window.addEventListener("resize", () => {
         updateProgress(currData.progress);
       });
+
+      Number.prototype.format = function() {
+        return formatNumber(this);
+      };
+
+      function formatNumber(n) {
+        if (("" + n).length <= 3) return n;
+        let chars = (("" + n).includes(".")) ? ("" + n).substr(0, ("" + n).indexOf(".")).split("") : ("" + n).split("");
+        let formatted = chars.reverse().reduce((prev, curr, i) => {
+          if (typeof prev != "string") return curr;
+          return (i % 3 == 0) ? prev + "," + curr : prev + curr;
+        });
+        return formatted.split("").reverse().join("") + (("" + n).includes(".") ? ("" + n).substr(("" + n).indexOf(".")) : "");
+      }
 
       function vhToPx(vh) {
         return window.innerHeight * (vh / 100);
@@ -306,6 +376,9 @@
 
         const circle = document.querySelector(".progress-bar-content-progress");
         circle.style.left = left + "px";
+
+        /*const line = document.querySelector(".progress-bar-content-line");
+        line.style.width = (left - vhToPx(3)) + "px";*/
       }
     </script>
   </body>

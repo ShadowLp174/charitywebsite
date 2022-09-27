@@ -72,7 +72,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on("data", () => {
-    socket.emit("progress", data.progress);
+    socket.emit("progress", data);
   });
 });
 
