@@ -2,7 +2,6 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <title></title>
     <style>
     * {
       --progress-bar-color: black;
@@ -193,7 +192,7 @@
       position: absolute;
       top: 0;
       left: 0;
-      height: 200%;
+      height: 100%;
       width: 100%;
     }
     .init {
@@ -258,8 +257,25 @@
       flex-wrap: wrap;
       flex-direction: column;
     }
+
+    /*link*/
+    .anchor {
+      text-decoration: none;
+      color: black;
+      font-size: 150%;
+      border: 1px solid rgba( 255, 255, 255, 0.8 );
+      padding: 10px;
+      border-radius: 10px;
+      transition: box-shadow 0.2s;
+    }
+    .anchor:hover {
+      box-shadow: 2px 8px 5px 0px rgba(0,0,0,0.75);
+      -webkit-box-shadow: 2px 8px 5px 0px rgba(0,0,0,0.75);
+      -moz-box-shadow: 2px 8px 5px 0px rgba(0,0,0,0.75);
+    }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Charity Channel Swim</title>
   </head>
   <body>
 
@@ -270,7 +286,7 @@
             <a href="https://kings-rochester.co.uk" class="nav-link"></a>
           </div>
           <div class="main-container">
-            <h1 class="title">King's Rochester Charity Swimming</h1>
+            <h1 class="title">Charity Channel Swim</h1>
 
             <div class="progress-bar-container">
               <div class="progress-bar-text">
@@ -285,6 +301,9 @@
 
                 <div class="progress-bar-content-progress"></div>
               </div>
+            </div>
+            <div>
+              <a href="https://www.justgiving.com/crowdfunding/kings-channel-swim" class="anchor">Donate!</a>
             </div>
           </div>
         </div>
