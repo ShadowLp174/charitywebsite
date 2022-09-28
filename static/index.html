@@ -362,6 +362,7 @@
         const scrollBottom = window.innerHeight - document.scrollingElement.scrollTop;
         document.getElementById("dsc").style.top = scrollBottom + "px";
       }
+      updateAlignment();
 
       // get the curr data
       socket.emit("init");
@@ -399,7 +400,17 @@
 
       window.addEventListener("resize", () => {
         updateProgress(currData.progress);
+        updateAlignment();
       });
+
+      function updateAlignment() {
+        const parent = document.querySelector(".description-container-text");
+        if (parent.scrollHeight > parent.clientHeight) {
+          parent.style.alignItems = "start";
+        } else {
+          parent.style.alignItems = "center";
+        }
+      }
 
       Number.prototype.format = function() {
         return formatNumber(this);
