@@ -7,6 +7,7 @@
       --progress-bar-color: black;
       --progress-bar-progress-color: #4169e1;
       --fading-height: 100px;
+      --nav-logo-color: midnightblue;
     }
 
     @font-face {
@@ -95,6 +96,8 @@
       z-index: 10;
 
       box-sizing: border-box;
+
+      transition: all 0.2s;
     }
     .nav-link {
       display: block;
@@ -106,15 +109,20 @@
 
       content: "";
 
-      background-image: url("./assets/logo.png");
+      /*background-image: url("./assets/logo.png");
       background-size: contain;
       background-repeat: no-repeat;
-      background-position: center top;
+      background-position: center top;*/
+      background: var(--nav-logo-color);
 
-      transition: all 0.2s;
+      -webkit-mask-image: url("./assets/logo.png");
+      -webkit-mask-size: contain;
+      -webkit-mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+
       border-radius: 10px;
     }
-    .nav-link:hover {
+    .nav-container:hover {
       box-shadow: 1px 4px 5px 1px rgba(0,0,0,0.75);
       -webkit-box-shadow: 1px 4px 5px 1px rgba(0,0,0,0.75);
       -moz-box-shadow: 1px 4px 5px 1px rgba(0,0,0,0.75);
@@ -282,7 +290,7 @@
       text-decoration: none;
       color: black;
       font-size: 150%;
-      border: 1px solid rgba( 255, 255, 255, 0.8 );
+      border: 1px solid black;
       padding: 10px;
       border-radius: 10px;
       transition: box-shadow 0.2s;
@@ -291,6 +299,20 @@
       box-shadow: 2px 8px 5px 0px rgba(0,0,0,0.75);
       -webkit-box-shadow: 2px 8px 5px 0px rgba(0,0,0,0.75);
       -moz-box-shadow: 2px 8px 5px 0px rgba(0,0,0,0.75);
+    }
+
+    /*donation widget*/
+    .donation-container {
+      width: 100%;
+      display: flex;
+
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    .donation-container > * {
+      margin-top: 5px;
+      margin-bottom: 5px;
     }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -323,8 +345,11 @@
                 <div class="progress-bar-content-progress"></div>
               </div>
             </div>
-            <div>
+            <div class="donation-container">
               <a href="https://www.justgiving.com/crowdfunding/kings-channel-swim" class="anchor">Donate!</a>
+              <div class="init">
+                <span raised></span> raised by <span supporters></span> supporters
+              </div>
             </div>
           </div>
         </div>
@@ -389,13 +414,17 @@
         // animate on init
         if (!init) return;
         init = false;
-        const txt = document.querySelectorAll(".progress-bar-text > *");
+        const txt = document.querySelectorAll(".init");
         for (let i = 0; i < txt.length; i++) {
           txt[i].style.animationName = "fadeIn";
           txt[i].style.animationDuration = "0.2s";
           txt[i].style.animationIterationCount = 1;
           txt[i].classList.remove("init")
         }
+      });
+      socket.on("fundUpdate", (data) => {
+        document.querySelector("span[raised]").innerHTML = data.raised;
+        document.querySelector("span[supporters]").innerHTML = data.supporter;
       });
 
       window.addEventListener("resize", () => {

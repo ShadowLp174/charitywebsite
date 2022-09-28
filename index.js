@@ -75,12 +75,39 @@ io.on('connection', (socket) => {
 
   socket.on("init", () => {
     socket.emit("data", data);
+    socket.emit("fundUpdate", scraped);
   });
 
   socket.on("data", () => {
     socket.emit("progress", data);
   });
 });
+
+const scraper = new (require("./Scraper.js"))();
+const scraped = {};
+
+function isDifferent(a, b) {
+  if (Object.keys(a).length == 0) return true;
+  for (key in a) {
+    if (a[key] !== b[key]) return true;
+  }
+  return false;
+}
+
+setInterval(() => {
+  scraper.scrape().then(refreshed => {
+    if (!isDifferent(scraped, refreshed)) return;
+    for (key in refreshed) {
+      scraped[key] = refreshed[key];
+    }
+    io.emit("fundUpdate", scraped);
+  });
+}, 8000);
+scraper.scrape().then(data => {
+  for (key in data) {
+    scraped[key] = data[key];
+  }
+})
 
 function save() {
   fs.writeFile(path.join(__dirname + "/data/goals.json"), JSON.stringify(data), "utf8", () => {
@@ -121,3 +148,22 @@ function addProgress(count=null) {
 
   return true;
 }
+
+
+// Prevent crashes
+process.on("unhandledRejection", (reason, p) => {
+  console.log(" [Error_Handling] :: Unhandled Rejection/Catch");
+  console.log(reason, p);
+});
+process.on("uncaughtException", (err, origin) => {
+  console.log(" [Error_Handling] :: Uncaught Exception/Catch");
+  console.log(err, origin);
+});
+process.on("uncaughtExceptionMonitor", (err, origin) => {
+  console.log(" [Error_Handling] :: Uncaught Exception/Catch (MONITOR)");
+  console.log(err, origin);
+});
+process.on("multipleResolves", (type, promise, reason) => {
+  console.log(" [Error_Handling] :: Multiple Resolves");
+  console.log(type, promise, reason);
+});
