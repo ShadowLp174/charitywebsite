@@ -81,11 +81,10 @@ function updateProgress(distance=null) {
   if (Number.isNaN(distance)) return false;
   data.curr = distance;
   const progress = distance / (data.goal / 100);
+  data.progress = progress;
   console.log(progress, distance, data);
 
-  io.emit("progress", { progress: progress, dist: distance });
-
-  data.progress = progress;
+  io.emit("data", data);
 
   fs.writeFile(path.join(__dirname + "/data/goals.json"), JSON.stringify(data), "utf8", () => {
     console.log("saved");
