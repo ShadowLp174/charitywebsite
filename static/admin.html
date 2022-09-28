@@ -10,19 +10,35 @@
     <div>
       <p>Progress: </p>
       <span id="progress">Loading...</span>
+      <br />
+      <button onclick="update({ count: 1 }, 'add')">Add 1</button>
+      <button onclick="update({ count: 10 }, 'add')">Add 10</button>
+      <button onclick="update({ count: -1 }, 'add')">Subtract 1</button>
+      <button onclick="update({ count: -10 }, 'add')">Subtract 10</button>
+      <br />
+      <br />
+      Add custom amount (Enter negative value for subtraction):
+      <div>
+        <input placeholder="Amount to add/subtract" value="5" addCustom />
+        <button onclick="addCustom(this.parentElement.children[0])">Add/subtract</button>
+      </div>
     </div>
+    <br />
 
     <div>
-      <input type="text"></input>
+      <input type="text" update placeholder="Reset progress to..."></input>
 
-      <button type="button" onclick="update(this)">Update</button>
+      <button type="button" onclick="updateProgress(this)" update>Update</button>
+    </div>
+
+    <br />
+    <div>
+      Goal: <input type="text" goal placeholder="Loading..."></input><button onclick="updateGoal()">Save</button>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-    const currData = {
-
-    }
+    const currData = {}
 
     var socket = io();
     socket.on("progress", (data) => {
@@ -34,11 +50,12 @@
       for (key in data) {
         currData[key] = data[key];
       }
-      updateProgress(currData.progress);
+      document.querySelector("input[goal]").value = data.goal.format();
+      updatePDisplay(currData.progress);
     });
     socket.emit("init");
 
-    function updateProgress(percentage=currData.progress) {
+    function updatePDisplay(percentage=currData.progress) {
       document.querySelector("#progress").innerHTML = percentage + "% (" + currData.curr.format() + ") out of " + currData.goal.format() + currData.units;
     }
 
@@ -55,28 +72,53 @@
       });
       return formatted.split("").reverse().join("") + (("" + n).includes(".") ? ("" + n).substr(("" + n).indexOf(".")) : "");
     }
-
-    document.querySelector("input[type='text']").addEventListener("keyup", function(evt) {
+    function formatInput(evt) {
       if ([37, 38, 39, 40].includes(evt.which)) return;
-      if (this.value.charAt(this.value.length - 1) == ".") return;
-      if (Number.isNaN(parseFloat(this.value.replace(/\,/g, "")))) return evt.preventDefault();
-      var n = parseFloat(this.value.replace(/\,/g, ""));
-      const pos = this.selectionEnd;
+      if (evt.target.value.charAt(evt.target.value.length - 1) == ".") return;
+      if (Number.isNaN(parseFloat(evt.target.value.replace(/\,/g, "")))) return evt.preventDefault();
+      var n = parseFloat(evt.target.value.replace(/\,/g, ""));
+      const pos = evt.target.selectionEnd;
       evt.target.value = n.format();
       evt.target.selectionEnd = pos + 1;
+    }
+
+    document.querySelector("input[update]").addEventListener("keyup", function(evt) {
+      if (evt.which == 13) return updateProgress(evt.target);
+      formatInput(evt);
     });
+    document.querySelector("input[goal]").addEventListener("keyup", function(evt) {
+      if (evt.which == 13) {
+        return update({ goal: evt.target.value.replace(/\,/g, "") }, "goal");
+      }
+      formatInput(evt);
+    });
+    function updateGoal() {
+      const input = document.querySelector("input[goal]");
+      update({ goal: input.value.replace(/\,/g, "") }, "goal");
+    }
 
-    function update(btn) {
+    document.querySelector("input[addCustom]").addEventListener("keyup", function(evt) {
+      if(evt.which == 13) {
+        return update({ count: evt.target.value.replace(/\,/g, "") }, "add");
+      }
+    });
+    function addCustom(input) {
+      update({ count: input.value.replace(/\,/g, "") }, "add");
+    }
+
+    function updateProgress(btn) {
       const input = btn.parentElement.querySelector("input");
-      console.log(input.value);
 
-      fetch("./admin/update", {
+      update({ progress: input.value.replace(/\,/g, "") })
+    }
+    function update(data, path="") {
+      fetch("./admin/update/" + path, {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
         method: "post",
-        body: JSON.stringify({ progress: input.value.replace(/\,/g, "") })
+        body: JSON.stringify(data)
       }).then(res => res.text()).then(txt => {
         if (txt != "true") alert("Error updating the data.");
       });

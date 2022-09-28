@@ -30,6 +30,12 @@ secured.get("/", (_req, res) => {
 secured.post("/update", (req, res) => {
   res.send(updateProgress(req.body.progress));
 });
+secured.post("/update/goal", (req, res) => {
+  res.send(updateGoal(req.body.goal));
+});
+secured.post("/update/add", (req, res) => {
+  res.send(addProgress(req.body.count));
+});
 
 app.use("/admin", secured);
 
@@ -76,6 +82,12 @@ io.on('connection', (socket) => {
   });
 });
 
+function save() {
+  fs.writeFile(path.join(__dirname + "/data/goals.json"), JSON.stringify(data), "utf8", () => {
+    console.log("saved");
+  });
+}
+
 function updateProgress(distance=null) {
   distance = parseInt(distance);
   if (Number.isNaN(distance)) return false;
@@ -86,9 +98,26 @@ function updateProgress(distance=null) {
 
   io.emit("data", data);
 
-  fs.writeFile(path.join(__dirname + "/data/goals.json"), JSON.stringify(data), "utf8", () => {
-    console.log("saved");
-  });
+  save();
+  return true;
+}
+function updateGoal(goal=null) {
+  goal = parseInt(goal);
+  if (Number.isNaN(goal)) return false;
+  data.goal = goal;
+  updateProgress(data.curr);
+
+  save();
+  return true;
+}
+function addProgress(count=null) {
+  if (!count) return false;
+  count = parseInt(count);
+  if (Number.isNaN(count)) return false;
+  data.curr += count;
+  updateProgress(data.curr);
+
+  save();
 
   return true;
 }

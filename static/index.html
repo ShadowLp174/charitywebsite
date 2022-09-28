@@ -14,11 +14,15 @@
       height: 100%;
       margin: 0;
       padding: 0;
+      font-family: Comic Sans MS;
     }
 
     .main {
       width: 100%;
       height: calc(2 * 100vh - var(--fading-height));
+    }
+    .title {
+      text-align: center;
     }
 
     .main-content {
@@ -252,10 +256,20 @@
       position: relative;
 
       display: flex;
-      /*justify-content: center;*/
+      justify-content: center;
       align-items: center;
       flex-wrap: wrap;
       flex-direction: column;
+    }
+    .description-container-text {
+      height: 100%;
+      width: 100%;
+
+      overflow-y: auto;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     /*link*/
@@ -276,6 +290,8 @@
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Charity Channel Swim</title>
+    <link href="https://uploads-ssl.webflow.com/604a349fe79798c9ae91c6de/63077555fe5e0d1b12616ad4_fav.png" rel="shortcut icon" type="image/x-icon"/>
+    <link href="https://uploads-ssl.webflow.com/604a349fe79798c9ae91c6de/63077559a98aa3750a87b661_web.png" rel="apple-touch-icon"/>
   </head>
   <body>
 
@@ -310,15 +326,17 @@
       </div>
       <div class="description">
         <div class="description-container" id="dsc">
-          As a school, we have set out with the aim of swimming the length of the English Channel.
-          However, instead of physically swimming from one side to the other, we are teaming together in an attempt to swim 1300 lengths.
-          This is equal in distance to swimming across the Channel.
-          The goal of this event is to raise money for Cobbes Meadow Riding School for the Disabled, the school charity for the year.
-          Cobbes Meadow Riding School for the Disabled is a wonderful charity that provides horse riding and carriage driving
-          opportunities to children and adults with an array of disabilities.
-          This can be a crucial way for people to build on their social skills and develop their motor skills in a new way,
-          as well as providing the opportunity to try exciting new things and make new friends.
-          <img src="./assets/poster.jpeg" height="100%" />
+          <div class="description-container-text">
+            As a school, we have set out with the aim of swimming the length of the English Channel.
+            However, instead of physically swimming from one side to the other, we are teaming together in an attempt to swim 1300 lengths.
+            This is equal in distance to swimming across the Channel.
+            The goal of this event is to raise money for Cobbes Meadow Riding School for the Disabled, the school charity for the year.
+            Cobbes Meadow Riding School for the Disabled is a wonderful charity that provides horse riding and carriage driving
+            opportunities to children and adults with an array of disabilities.
+            This can be a crucial way for people to build on their social skills and develop their motor skills in a new way,
+            as well as providing the opportunity to try exciting new things and make new friends.
+          </div>
+          <!--<img src="./assets/poster.jpeg" height="100%" />-->
         </div>
       </div>
     </div>
@@ -360,7 +378,7 @@
         // update text
         document.querySelector("#curr").innerHTML = currData.curr;
         document.querySelector("#goal").innerHTML = currData.goal;
-        document.querySelector("#percentage").innerHTML = Math.round(currData.progress) + "%"
+        document.querySelector("#percentage").innerHTML = (Math.round(currData.progress * 10) / 10) + "%"
 
         // animate on init
         if (!init) return;
