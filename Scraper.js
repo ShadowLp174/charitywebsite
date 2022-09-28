@@ -18,6 +18,8 @@ class Scraper {
         const supporter = supporterBox.children[1].children[0].innerHTML.split(" ")[0];
         const goal = supporterBox.children[0].children[0].innerHTML;
         res({ raised: value, supporter: supporter, goal: goal });
+      }).catch(err => {
+        console.log(err);
       });
     });
   }

@@ -58,6 +58,9 @@ server.listen(3000, () => {
 const data = require(path.join(__dirname + "/data/goals.json"));
 console.log(data);
 
+const scraper = new (require("./Scraper.js"))();
+const scraped = {};
+
 // socket.io stuff
 const { Server } = require("socket.io");
 const io = new Server(server);
@@ -82,9 +85,6 @@ io.on('connection', (socket) => {
     socket.emit("progress", data);
   });
 });
-
-const scraper = new (require("./Scraper.js"))();
-const scraped = {};
 
 function isDifferent(a, b) {
   if (Object.keys(a).length == 0) return true;
