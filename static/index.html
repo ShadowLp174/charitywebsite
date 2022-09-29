@@ -8,11 +8,17 @@
       --progress-bar-progress-color: #4169e1;
       --fading-height: 100px;
       --nav-logo-color: #181E37;
+      --nav-logo-padding: 0.5rem;
+      --nav-height: 12%;
     }
 
     @font-face {
       font-family: "ComicSans";
       src: url("./assets/comicsans.ttf");
+    }
+    @font-face {
+      font-family: "Brother 1816";
+      src: url("./assets/Brother1816-Light.ttf");
     }
 
     html,
@@ -20,7 +26,8 @@
       height: 100%;
       margin: 0;
       padding: 0;
-      font-family: "ComicSans";
+      /*font-family: "ComicSans";*/
+      font-family: "Brother 1816";
     }
 
     .main {
@@ -89,9 +96,9 @@
       border: 1px solid rgba( 255, 255, 255, 0.18 );
 
       width: 75%;
-      height: 7%;
+      height: var(--nav-height);
       margin-bottom: 1%;
-      margin-top: 4%;
+      margin-top: 3%;
 
       z-index: 10;
 
@@ -109,16 +116,17 @@
 
       content: "";
 
-      /*background-image: url("./assets/logo.png");
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center top;*/
-      background: var(--nav-logo-color);
+      /*background: var(--nav-logo-color);
 
       -webkit-mask-image: url("./assets/logo.png");
-      -webkit-mask-size: auto 100%;
+      -webkit-mask-size: auto calc(100% - var(--nav-logo-padding) * 2);
       -webkit-mask-repeat: no-repeat;
-      -webkit-mask-position: center;
+      -webkit-mask-position: center;*/
+
+      background-image: url("./assets/logo-coloured.svg");
+      background-size: auto calc(100% - var(--nav-logo-padding) * 2);
+      background-position: center;
+      background-repeat: no-repeat;
 
       border-radius: 10px;
     }
@@ -314,6 +322,15 @@
       margin-top: 5px;
       margin-bottom: 5px;
     }
+
+    @media only screen and (max-width: 500px) {
+      .nav-container {
+        height: 7%;
+      }
+      .nav-link {
+        -webkit-mask-size: auto calc(100% - 5px);
+      }
+    }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Charity Channel Swim</title>
@@ -428,6 +445,7 @@
       });
 
       window.addEventListener("resize", () => {
+        console.log("resize");
         updateProgress(currData.progress);
         updateAlignment();
       });
